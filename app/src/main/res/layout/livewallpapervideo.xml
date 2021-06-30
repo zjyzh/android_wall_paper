@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wallpaper xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/app_name"
+    android:settingsActivity="ASD"
+    android:thumbnail="@mipmap/ic_launcher" android:layout_height="match_parent"
+     android:layout_width="wrap_content"/>

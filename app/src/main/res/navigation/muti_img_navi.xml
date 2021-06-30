@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/muti_img_navi"
+    app:startDestination="@id/pagerFragment">
+    <fragment
+        android:id="@+id/muti_img"
+        android:name="com.example.final_wallpaper.grid_img.Muti_img"
+        android:label="fragment_muti_img"
+        tools:layout="@layout/fragment_muti_img" >
+        <action
+            android:id="@+id/action_muti_img_to_pagerFragment"
+            app:destination="@id/pagerFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/pagerFragment"
+        android:name="com.example.final_wallpaper.grid_img.PagerFragment"
+        android:label="fragment_pager"
+        tools:layout="@layout/fragment_pager" />
+</navigation>
