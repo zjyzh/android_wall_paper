@@ -30,17 +30,17 @@
 
             >
 
-            <HorizontalScrollView
-                android:id="@+id/fl_container"
-                android:layout_width="match_parent"
+<!--            <ScrollView-->
+<!--                android:id="@+id/fl_container"-->
+<!--                android:layout_width="wrap_content"-->
 
-                android:layout_height="match_parent"
-                app:navGraph="@navigation/muti_img_navi">
+<!--                android:layout_height="match_parent"-->
+<!--                app:navGraph="@navigation/muti_img_navi">-->
 
                 <LinearLayout
 
                     xmlns:tools="http://schemas.android.com/tools"
-                    android:id="@+id/relativelayout_global"
+                    android:id="@+id/fragment_home"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:orientation="horizontal"
@@ -48,7 +48,7 @@
 
 
                     <ImageView
-                        android:id="@+id/image2"
+                        android:id="@+id/activity_background"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:adjustViewBounds="true"
@@ -60,7 +60,7 @@
                         app:profileMainImage="@{imageUrl}" />
 
                 </LinearLayout>
-            </HorizontalScrollView>
+<!--            </ScrollView>-->
 
         </FrameLayout>
 

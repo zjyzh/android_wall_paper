@@ -94,7 +94,7 @@ public class Muti_img extends Fragment {
         });
 
         swipeRefreshLayout.setOnRefreshListener(() -> myViewModel.fetchData());
-        resAdapta = new ResAdapta();
+        resAdapta = new ResAdapta(this);
         recyclerView.setAdapter(resAdapta);
 //        return inflater.inflate(R.layout.fragment_muti_img, container, false);
         return root;

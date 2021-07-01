@@ -1,32 +1,30 @@
 package com.example.final_wallpaper;
 
-import android.Manifest;
 import android.app.Activity;
-import android.app.WallpaperManager;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.Looper;
 import android.provider.MediaStore;
-import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.WindowMetrics;
+import android.view.animation.Animation;
+import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.example.final_wallpaper.databinding.ActivityMainBinding;
 //import com.example.final_wallpaper.grid_img.Muti_img_fragment;
+import com.example.final_wallpaper.ui.middle.BackgroundTask;
+import com.example.final_wallpaper.ui.middle.MyListener;
 import com.example.final_wallpaper.ui.setting.SettingFragment;
 import com.example.final_wallpaper.ui.home.HomeFragment;
 import com.example.final_wallpaper.ui.middle.MiddleFragment;
@@ -36,26 +34,25 @@ import com.hjq.permissions.OnPermissionCallback;
 import com.hjq.permissions.Permission;
 import com.hjq.permissions.XXPermissions;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.lifecycle.SavedStateViewModelFactory;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavController;
 import androidx.viewpager.widget.ViewPager;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
+import java.util.Stack;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+
+import static com.example.final_wallpaper.util.FileUtil.readPath;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 /*
  * description:
@@ -64,7 +61,7 @@ import java.util.concurrent.Executors;
  * @author zjy
  * @createTime 2021-06-30 16:20
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MyListener {
 
     //    设置销毁时候保存状态的常量,这里保存的是背景
     public final static String BACKGROUND_KEY_NUM = "my_key";
@@ -85,6 +82,16 @@ public class MainActivity extends AppCompatActivity {
     private HomeFragment homeFragment;
 
 
+    //2.实现MiddleFragment的接口，这个是activity接受传值
+    public void middleFragmentMsg(String msg) {
+        mainViewModel.saveImgUrl(msg);
+//                activity给fragment传值，让它更新背景
+//        mFragmentListener.onTypeClick(mainViewModel.getSavedImageUrl().getValue());
+//                更新activity的背景
+        activityMainBinding.setImageUrl(mainViewModel.getSavedImageUrl().getValue());
+        Log.e("TAG", "Fragment传回的数据：" + msg);
+    }
+
     /*
      * @author zjy
      * @param activity
@@ -96,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public static void setWindowFlag(Activity activity, final int bits, boolean on) {
 
+
         Window win = activity.getWindow();
         WindowManager.LayoutParams winParams = win.getAttributes();
         if (on) {
@@ -106,9 +114,52 @@ public class MainActivity extends AppCompatActivity {
         win.setAttributes(winParams);
     }
 
+    MiddleFragment middleFragment;
+
+
+    int PREVIOUS_OFF_SET = 0;
+    int screenWidth = 0;
+    int PREVEIOUS_MARGIN = 0;
+    int MIN_SIZE = 10;
+    int TOTAL_OFFSET = 0;
+
+    int ONE_PAGE_OFF = 25;
+    int onePageNum = 0;
+    Boolean isPush = false;
+    int pos = 0;
+    int START = 0;
+    int END = 0;
+
+
+    private final ScheduledExecutorService scheduler =
+
+            Executors.newScheduledThreadPool(1);
+
+//    public void beepForAnHour() {
+//        final Runnable beeper = new Runnable() {
+//            public void run() { System.out.println("beep"); }
+//
+//        };
+//
+//        final ScheduledFuture beeperHandle =
+//
+//                scheduler.scheduleAtFixedRate(beeper, 1, 1, SECONDS);
+//
+//        scheduler.schedule(new Runnable() {
+//            public void run() { beeperHandle.cancel(true); }
+//
+//        }, 60 * 60, SECONDS);
+//
+//    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
+        final WindowMetrics metrics = getWindowManager().getCurrentWindowMetrics();
+        Rect r = metrics.getBounds();
+        screenWidth = r.width();
+//         System.out.println(r.width() + "高度  " + r.height());
 
 //        设置透明状态栏
         supportRequestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
@@ -138,9 +189,54 @@ public class MainActivity extends AppCompatActivity {
 
         mViewPager = (ViewPager) findViewById(R.id.vpager);//获取到ViewPager
         //ViewPager的监听
+
+//        下面这个代码比较复杂，主要想实现的就是壁纸的滚动
+        ImageView backGroundImg = findViewById(R.id.activity_background);
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) backGroundImg.getLayoutParams();
+        Stack<Integer> offs = new Stack<>();
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+//                System.out.println( "   (PREVIOUS_OFF_SET -  positionOffsetPixels ) : " + (PREVIOUS_OFF_SET -  positionOffsetPixels ) );
+
+                pos = position;
+//                System.out.println( positionOffset +  "       pix: " +  (PREVIOUS_OFF_SET - positionOffsetPixels )+"         pre:" + PREVIOUS_OFF_SET);
+                if ((PREVIOUS_OFF_SET - positionOffsetPixels) > MIN_SIZE) {
+
+                    PREVIOUS_OFF_SET = positionOffsetPixels;
+//                    System.out.println( onePageNum + "   ONE_PAGE_OFF : " + ONE_PAGE_OFF + "      >MIN_SIZE " );
+                    if (offs.size() >= (position) * ONE_PAGE_OFF && !offs.empty()) {
+                        offs.pop();
+                        isPush = false;
+                        params.leftMargin = (PREVEIOUS_MARGIN);
+
+                        PREVEIOUS_MARGIN = (int) ((PREVEIOUS_MARGIN + MIN_SIZE));
+                        TOTAL_OFFSET += MIN_SIZE;
+                        System.out.println(TOTAL_OFFSET + "   pop : " + offs.size());
+                    }
+
+                }
+                if ((PREVIOUS_OFF_SET - positionOffsetPixels) < -MIN_SIZE) {
+
+//                     System.out.println( TOTAL_OFFSET + "   push outside : " + offs.size()  + "  pos::" + (position+1)  );
+
+                    PREVIOUS_OFF_SET = positionOffsetPixels;
+
+                    if (offs.size() < (position + 1) * ONE_PAGE_OFF) {
+                        offs.push(MIN_SIZE);
+                        isPush = true;
+                        params.leftMargin = (PREVEIOUS_MARGIN);
+                        PREVEIOUS_MARGIN = (int) ((PREVEIOUS_MARGIN - MIN_SIZE));
+                        TOTAL_OFFSET -= MIN_SIZE;
+                        System.out.println(TOTAL_OFFSET + "   push : " + offs.size() + "  pos::" + (position + 1));
+                    }
+
+//
+                }
+
+                backGroundImg.setLayoutParams(params);
             }
 
             @Override
@@ -151,6 +247,54 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onPageScrollStateChanged(int state) {
+
+                switch (state) {
+                    case ViewPager.SCROLL_STATE_IDLE:
+                        //无动作、初始状态
+//                        END = PREVEIOUS_MARGIN;
+                        System.out.println("   TOTAL_OFFSET:  " + (TOTAL_OFFSET));
+                        onePageNum = 0;
+//                        Log.i("TAG", "---->onPageScrollStateChanged无动作");
+                        break;
+                    case ViewPager.SCROLL_STATE_DRAGGING:
+                        //点击、滑屏
+//                        START = PREVEIOUS_MARGIN;
+
+//                        Log.i("TAG", "---->onPageScrollStateChanged点击、滑屏");
+                        break;
+                    case ViewPager.SCROLL_STATE_SETTLING:
+                        onePageNum = 0;
+                        final long timeInterval = 10;// 两分钟运行一次
+                        Runnable runnable = new Runnable() {
+                            public void run() {
+                                while (offs.size() > pos * ONE_PAGE_OFF && !isPush) {
+                                    // ------- code for task to run
+                                    try {
+                                        if (!offs.empty()) {
+                                            offs.pop();
+                                            params.leftMargin = (PREVEIOUS_MARGIN);
+//                            PREVIOUS_OFF_SET = positionOffsetPixels;
+                                            PREVEIOUS_MARGIN = (int) ((PREVEIOUS_MARGIN + MIN_SIZE));
+                                            TOTAL_OFFSET += MIN_SIZE;
+                                            System.out.println(TOTAL_OFFSET + "   pop : " + offs.size() + "pos:: " + pos);
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        System.out.println("多线程问题");
+                                    }
+                                    // ------- ends here
+                                    try {
+                                        Thread.sleep(timeInterval);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                        };
+                        Thread thread = new Thread(runnable);
+                        thread.start();
+                        break;
+                }
             }
         });
 
@@ -192,7 +336,7 @@ public class MainActivity extends AppCompatActivity {
         final ArrayList<Fragment> fgLists = new ArrayList<>(4);
         homeFragment = new HomeFragment();
 //       初始化要传值的子组件
-        mFragmentListener = homeFragment;
+
 //        homeFragment.onPrimaryNavigationFragmentChanged();
         Bundle sendBundle = new Bundle();
         Log.e("main_oncreate: in ", mainViewModel.getSavedImageUrl().getValue());
@@ -202,7 +346,10 @@ public class MainActivity extends AppCompatActivity {
 
 //        添加三个fragment
         fgLists.add(homeFragment);
+        middleFragment = new MiddleFragment();
         fgLists.add(new MiddleFragment());
+
+//        mFragmentListener = middleFragment;
         fgLists.add(new SettingFragment());
 
         FragmentPagerAdapter mPagerAdapter = new FragmentPagerAdapter(getSupportFragmentManager()) {
@@ -281,7 +428,7 @@ public class MainActivity extends AppCompatActivity {
                 Cursor cursor = getContentResolver().query(selectedImage,
                         new String[]{MediaStore.Images.Media.DATA}, null, null, null);
                 if (null == cursor) {
-                    makeToast( "图片没找到");
+                    makeToast("图片没找到");
                     return;
                 }
                 cursor.moveToFirst();
@@ -289,9 +436,10 @@ public class MainActivity extends AppCompatActivity {
                 picturePath = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
                 cursor.close();
 
+//                mainViewModel.singleImgs.setValue();
                 mainViewModel.saveImgUrl("file://" + picturePath);
 //                activity给fragment传值，让它更新背景
-                mFragmentListener.onTypeClick(mainViewModel.getSavedImageUrl().getValue());
+//                mFragmentListener.onTypeClick(mainViewModel.getSavedImageUrl().getValue());
 //                更新activity的背景
                 activityMainBinding.setImageUrl(mainViewModel.getSavedImageUrl().getValue());
                 Log.e(" onActivityResult ", "onActivityResult    " + mainViewModel.getSavedImageUrl().getValue());
@@ -300,4 +448,5 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
 }

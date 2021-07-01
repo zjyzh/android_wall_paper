@@ -28,11 +28,14 @@ import static android.content.ContentValues.TAG;
 public class MainViewModel extends AndroidViewModel {
 
     private SavedStateHandle handle;
+    public MutableLiveData<String> singleImgs;
 
-//    初始化
+
+    //    初始化
     public MainViewModel(@NonNull Application application, SavedStateHandle handler){
         super(application);
         this.handle = handler;
+        singleImgs = new MutableLiveData<>();
         if(!handle.contains(MainActivity.BACKGROUND_KEY_NUM)){
             load();
         }

@@ -33,37 +33,7 @@ public class PagerFragment extends Fragment {
         Log.e("Pager","create");
 //        viewPager2 = requireView().findViewById(R.id.viewPager_photo);
 //        txtPhotoNum = requireView().findViewById(R.id.txt_photo_tag);
-        Bundle arguments = getArguments();
-        if (arguments != null)
-        {
-            ArrayList<PhotoItem> photoList = arguments.getParcelableArrayList("PHOTO_LIST");
 
-            AdapterPagerPhoto adapterPagerPhoto = new AdapterPagerPhoto();
-            viewPager2.setAdapter(adapterPagerPhoto);
-            adapterPagerPhoto.submitList(photoList);
-
-            viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-                @Override
-                public void onPageSelected(int position) {
-                    super.onPageSelected(position);
-                    txtPhotoNum.setText((position+1)+"/"+photoList.size());
-                }
-            });
-
-            viewPager2.setCurrentItem(getArguments().getInt("PHOTO_POSITION"), false);
-            // then you have arguments
-        } else {
-//            AdapterPagerPhoto adapterPagerPhoto = new AdapterPagerPhoto();
-//            viewPager2.setAdapter(adapterPagerPhoto);
-//            viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-//                @Override
-//                public void onPageSelected(int position) {
-//                    super.onPageSelected(position);
-//                    txtPhotoNum.setText((position+1)+"/"+photoList.size());
-//                }
-//            });
-            // no arguments supplied...
-        }
     }
 
     @Override
@@ -74,7 +44,7 @@ public class PagerFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        viewPager2 = requireView().findViewById(R.id.viewPager_photo);
+        viewPager2 = requireView().findViewById(R.id.viewPager2);
         txtPhotoNum = requireView().findViewById(R.id.txt_photo_tag);
         Bundle arguments = getArguments();
         if (arguments != null)

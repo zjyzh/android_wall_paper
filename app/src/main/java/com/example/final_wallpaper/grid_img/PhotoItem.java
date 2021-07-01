@@ -16,11 +16,14 @@ public class PhotoItem implements Parcelable {
     String previewUrl;
     @SerializedName("largeImageURL")
     String fullUrl;
+    @SerializedName("webformatHeight")
+    int photoHeight;
 
     protected PhotoItem(Parcel in) {
         photoId = in.readInt();
         previewUrl = in.readString();
         fullUrl = in.readString();
+        photoHeight = in.readInt();
     }
 
     @Override
@@ -28,6 +31,7 @@ public class PhotoItem implements Parcelable {
         dest.writeInt(photoId);
         dest.writeString(previewUrl);
         dest.writeString(fullUrl);
+        dest.writeInt(photoHeight);
     }
 
     @Override

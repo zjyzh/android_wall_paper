@@ -30,57 +30,40 @@ public class HomeViewModel extends AndroidViewModel {
 
     private String HomeImgUrl;
 
-    public void saveImgUrl(String imgUrl){
-        HomeImgUrl = imgUrl;
-        mImageUrl = imgUrl;
-    }
+//    public void saveImgUrl(String imgUrl){
+//        HomeImgUrl = imgUrl;
+//
+//    }
 
     public LiveData<String> getText() {
         return mText;
     }
-    public static String mImageUrl = null;
-
-    public void setCardImg(ImageView view, String imageUrl){
-        Log.e("setCardImg", imageUrl);
-        try {
-            Integer img =  Integer.valueOf(imageUrl);
-            Glide.with(view.getContext())
-                    .load(img)
-                    .fitCenter()
-                    .into(view);
-        }catch (Exception e){
-            Glide.with(view.getContext())
-                    .load(imageUrl)
-                    .fitCenter()
-                    .into(view);
-        }
-    }
 
 
-    @BindingAdapter("profileImage")
-    public static void loadImage(ImageView view, String imageUrl) {
-//        Glide.with(getActivity().getApplicationContext()).load(R.mipmap.background1).fitCenter().into(imageView);
-        mImageUrl = imageUrl;
-        Log.e("   " , "homeFragment loadImage   "+ HomeViewModel.mImageUrl);
-
-//        ImageView imageView =
-//        如果传进来的imageurl为null，那就加载默认的背景图片
-        if(mImageUrl == null){
-            mImageUrl = String.valueOf(R.mipmap.background1);
-        }
-        try {
-            Integer img =  Integer.valueOf(mImageUrl);
-            Glide.with(view.getContext())
-                    .load(img)
-                    .fitCenter()
-                    .into(view);
-        }catch (Exception e){
-            Glide.with(view.getContext())
-                    .load(mImageUrl)
-                    .fitCenter()
-                    .into(view);
-        }
-
-    }
+//    @BindingAdapter("profileImage")
+//    public static void loadImage(ImageView view, String imageUrl) {
+////        Glide.with(getActivity().getApplicationContext()).load(R.mipmap.background1).fitCenter().into(imageView);
+//        mImageUrl = imageUrl;
+//        Log.e("   " , "homeFragment loadImage   "+ HomeViewModel.mImageUrl);
+//
+////        ImageView imageView =
+////        如果传进来的imageurl为null，那就加载默认的背景图片
+//        if(mImageUrl == null){
+//            mImageUrl = String.valueOf(R.mipmap.background1);
+//        }
+//        try {
+//            Integer img =  Integer.valueOf(mImageUrl);
+//            Glide.with(view.getContext())
+//                    .load(img)
+//                    .fitCenter()
+//                    .into(view);
+//        }catch (Exception e){
+//            Glide.with(view.getContext())
+//                    .load(mImageUrl)
+//                    .fitCenter()
+//                    .into(view);
+//        }
+//
+//    }
 
 }

@@ -13,11 +13,9 @@ public abstract class BackgroundTask {
 
     private void startBackground() {
         new Thread(() -> {
-
             doInBackground();
             activity.runOnUiThread(new Runnable() {
                 public void run() {
-
                     onPostExecute();
                 }
             });

@@ -86,39 +86,35 @@ public class FileUtil {
     public static void readPath(final Uri selectedImages, final Activity activity,
                                 RecycleAdapta recycleAdapta, MiddleViewModel middleViewModel) {
         DocumentFile pickedDir = DocumentFile.fromTreeUri(activity, selectedImages);
-        new BackgroundTask(activity) {
-            @Override
-            public void doInBackground() {
-                int i = 0;
-                try {
+        DocumentFile[] files =  pickedDir.listFiles();
+                    new BackgroundTask(activity) {
+                        @Override
+                        public void doInBackground() {
+                            try {
 //                    遍历文件夹，返回文件路径
-                    for (DocumentFile file : pickedDir.listFiles()) {
-                        if (isImgFile(file.getUri().toString())) {
-                            if (i < 10) {
-                                System.out.println("readpath" + getPath(activity, file.getUri()));
-                                i++;
+                                for (DocumentFile file : files){
+                                    String filePath = getPath(activity, file.getUri());
+                                        if (isImgFile(filePath)) {
+                                            middleViewModel.mutiImgs.getValue().add(filePath);
+                                        }
+                                    }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                Log.e("threadException", "" );
                             }
-                            middleViewModel.mutiImgs.getValue().add(getPath(activity, file.getUri()));
                         }
 
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Log.e("threadException", "" + i);
-                }
-            }
-
-            @Override
-            public void onPostExecute() {
+                        @Override
+                        public void onPostExecute() {
 //                线程执行完了之后，通知对应的组件更新自己的数据
-                recycleAdapta.convertList();
-                middleViewModel.saveImgs();
-                recycleAdapta.notifyDataSetChanged();
-                //hear is result part same
-                //same like post execute
-                //UI Thread(update your UI widget)
-            }
-        }.execute();
+                                recycleAdapta.convertList();
+                                middleViewModel.saveImgs();
+                                recycleAdapta.notifyDataSetChanged();
+                            //hear is result part same
+                            //same like post execute
+                            //UI Thread(update your UI widget)
+                        }
+                    }.execute();
 
     }
 
@@ -335,35 +331,34 @@ public class FileUtil {
      */
     public static boolean isImgFile(String fname) {
 
-        if (fname.toLowerCase().endsWith(".png")) {
-            return true;
+
+        try {
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            /**
+             * 最关键在此，把options.inJustDecodeBounds = true;
+             * 这里再decodeFile()，返回的bitmap为空，但此时调用options.outHeight时，已经包含了图片的高了
+             */
+            options.inJustDecodeBounds = true;
+            Bitmap bitmap = BitmapFactory.decodeFile(fname, options); // 此时返回的bitmap为null
+            /**
+             *options.outHeight为原始图片的高
+             */
+            if(options.outHeight> 0){
+                System.out.println(fname + "   是文件");
+                Log.e("Test", "Bitmap Height == " + options.outHeight);
+                return true;
+            }else{
+                System.out.println(fname + "   不是文件");
+                Log.e("Test", "Bitmap Height == " + options.outHeight);
+                return false;
+            }
+
+        }catch (Exception e){
+            System.out.println(fname + "不是文件");
+            return false;
         }
 
-        if (fname.toLowerCase().endsWith(".ico")) {
-            return true;
-        }
 
-        if (fname.toLowerCase().endsWith(".wbmp")) {
-            return true;
-        }
-
-        if (fname.toLowerCase().endsWith(".gif")) {
-            return true;
-        }
-
-        if (fname.toLowerCase().endsWith(".jpg")) {
-            return true;
-        }
-
-        if (fname.toLowerCase().endsWith(".jpeg")) {
-            return true;
-        }
-
-        if (fname.toLowerCase().endsWith(".bmp")) {
-            return true;
-        }
-
-        return false;
     }
 
 

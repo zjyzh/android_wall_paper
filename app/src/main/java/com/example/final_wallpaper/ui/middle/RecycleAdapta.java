@@ -74,8 +74,9 @@ public class RecycleAdapta extends ListAdapter<String, MyViewHolder> {
          * @date 17:19 2021-06-30
          * @description 
          */
-
-        list = new ArrayList(items);
+        synchronized (list){
+            list = new ArrayList(items);
+        }
     }
 
 
@@ -137,27 +138,27 @@ public class RecycleAdapta extends ListAdapter<String, MyViewHolder> {
         Glide.with(holder.itemView)
                 .load(list.get(position))
                 .placeholder(R.drawable.source_focus)
+                .centerCrop()
+
+                .override(480,640)
+                .listener(new RequestListener<Drawable>() {
+                    @Override
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                        if(holder.shimmerLayout != null){
+                            holder.shimmerLayout.stopShimmerAnimation();
+                        }
+                        return false;
+                    }
+
+
+
+                })
                 .into(holder.imageView);
-//                .listener(new RequestListener<Drawable>() {
-//                    @Override
-//                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-//                       e.printStackTrace();
-//                        if(holder.shimmerLayout != null){
-//                            holder.shimmerLayout.stopShimmerAnimation();
-//                        }
-//                        return false;
-//                    }
-//
-//                    @Override
-//                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-//                        if(holder.shimmerLayout != null){
-//                            holder.shimmerLayout.stopShimmerAnimation();
-//                        }
-//
-//                        return false;
-//                    }
-//                })
-//                .into(holder.imageView);
     }
 
 }
