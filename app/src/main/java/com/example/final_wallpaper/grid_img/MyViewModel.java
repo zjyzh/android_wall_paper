@@ -1,7 +1,6 @@
 package com.example.final_wallpaper.grid_img;
 
 import android.app.Application;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -18,7 +17,7 @@ import java.util.Random;
 public class MyViewModel extends AndroidViewModel {
     public MutableLiveData<List<PhotoItem>> photoListLive;
 
-    String[] keyWords = new String[]{"cat", "dog", "car", "beauty", "phone", "computer", "flower", "animal"};
+    String[] keyWords = new String[]{"cat", "galaxy", "museum", "beauty", "scenery", "art", "wallpaper", "animal"};
 
     public MyViewModel(@NonNull Application application) {
         super(application);
@@ -39,7 +38,6 @@ public class MyViewModel extends AndroidViewModel {
     }
 
     public void fetchData() {
-        Log.e("fetchData","fetchData");
         StringRequest stringRequest = new StringRequest(
                 Request.Method.GET,
                 getUrl(),
@@ -47,10 +45,12 @@ public class MyViewModel extends AndroidViewModel {
                     Pixabay pixabay = new Gson().fromJson(response, Pixabay.class);
                     photoListLive.setValue(pixabay.hits);
                 },
-                error -> Log.d("TAG", error.toString())
+                error -> {
+//                    Log.d("TAG", error.toString());
+                }
         );
         VolleySingleton.getINSTANCE(getApplication()).getRequestQueue().add(stringRequest);
-        Log.e("fetchData", stringRequest.toString());
+//        Log.e("fetchData", stringRequest.toString());
     }
 
 }

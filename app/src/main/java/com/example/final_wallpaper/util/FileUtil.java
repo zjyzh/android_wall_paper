@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.WallpaperManager;
 import android.content.ContentUris;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -14,29 +13,22 @@ import android.os.Environment;
 import android.os.Looper;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
-import android.provider.OpenableColumns;
-import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.documentfile.provider.DocumentFile;
-import androidx.lifecycle.ViewModel;
 
-import com.example.final_wallpaper.MainActivity;
-import com.example.final_wallpaper.MainViewModel;
-import com.example.final_wallpaper.ToFragmentListener;
-import com.example.final_wallpaper.databinding.ActivityMainBinding;
+import com.example.final_wallpaper.GlobalSetting;
 import com.example.final_wallpaper.ui.middle.BackgroundTask;
-import com.example.final_wallpaper.ui.middle.MiddleFragment;
 import com.example.final_wallpaper.ui.middle.MiddleViewModel;
-import com.example.final_wallpaper.ui.middle.RecycleAdapta;
+import com.hjq.permissions.OnPermissionCallback;
+import com.hjq.permissions.Permission;
+import com.hjq.permissions.XXPermissions;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.util.List;
 
-import static android.content.ContentValues.TAG;
+//import com.example.final_wallpaper.ToFragmentListener;
 
 /*
  * @author zjy
@@ -44,7 +36,6 @@ import static android.content.ContentValues.TAG;
  * @description 文件工具类
  */
 public class FileUtil {
-
 
     /*
      * @author zjy
@@ -55,19 +46,15 @@ public class FileUtil {
      * @description 设置锁屏壁纸
      */
     @RequiresApi(api = Build.VERSION_CODES.N)
-    public static void SetLockWallPaper(Context context, Bitmap bitmap) {
+    public static void SetLockWallPaper(Bitmap bitmap, WallpaperManager mWallManager, Context context) {
 
         try {
-            WallpaperManager mWallManager = WallpaperManager.getInstance(context);
             if (mWallManager.isSetWallpaperAllowed()) {
                 mWallManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_LOCK);
-                System.out.println("锁屏成功");
-            } else {
-                System.out.println("锁屏失败");
+                makeToast("设置锁屏壁纸成功", context);
+                bitmap.recycle();
             }
-        } catch (Throwable e) {
-            Looper.prepare();
-            Looper.loop();
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -84,37 +71,33 @@ public class FileUtil {
      */
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public static void readPath(final Uri selectedImages, final Activity activity,
-                                RecycleAdapta recycleAdapta, MiddleViewModel middleViewModel) {
+                                MiddleViewModel middleViewModel) {
         DocumentFile pickedDir = DocumentFile.fromTreeUri(activity, selectedImages);
-        DocumentFile[] files =  pickedDir.listFiles();
-                    new BackgroundTask(activity) {
-                        @Override
-                        public void doInBackground() {
-                            try {
+        DocumentFile[] files = pickedDir.listFiles();
+        new BackgroundTask(activity) {
+            @Override
+            public void doInBackground() {
+                try {
 //                    遍历文件夹，返回文件路径
-                                for (DocumentFile file : files){
-                                    String filePath = getPath(activity, file.getUri());
-                                        if (isImgFile(filePath)) {
-                                            middleViewModel.mutiImgs.getValue().add(filePath);
-                                        }
-                                    }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                Log.e("threadException", "" );
-                            }
+                    for (DocumentFile file : files) {
+                        String filePath = getPath(activity, file.getUri());
+//                        Log.e("path", filePath + "   " + file.getUri());
+                        if (isImgFile(filePath)) {
+                            middleViewModel.mutiImgs.getValue().add(filePath);
                         }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
 
-                        @Override
-                        public void onPostExecute() {
+            @Override
+            public void onPostExecute() {
 //                线程执行完了之后，通知对应的组件更新自己的数据
-                                recycleAdapta.convertList();
-                                middleViewModel.saveImgs();
-                                recycleAdapta.notifyDataSetChanged();
-                            //hear is result part same
-                            //same like post execute
-                            //UI Thread(update your UI widget)
-                        }
-                    }.execute();
+                middleViewModel.saveImgs();
+                middleViewModel.getRecycleAdapta().notifyDataSetChanged();
+            }
+        }.execute();
 
     }
 
@@ -125,52 +108,74 @@ public class FileUtil {
      * @param picturePath 图片文件的名字
      * @return void
      * @date 16:53 2021-06-30
-     * @description 设置背景图片和锁屏壁纸
+     * @description 设置背景图片和锁屏壁纸，使用多线程运行
      */
     @RequiresApi(api = Build.VERSION_CODES.N)
-    public static void setWallPaperAndBackground(Context context, String picturePath) {
+    public static void setWallPaperAndBackground(WallpaperManager mWallManager, String picturePath, Integer screenModel, Context context) {
+
+//        System.out.println("setWallPaperAndBackground " + picturePath);
+        final Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
+        switch (screenModel) {
+            case GlobalSetting
+                    .lock_mainScreen: { // 锁屏和主屏幕都有
+                new Thread(() -> {
+                    try {
+                        Looper.prepare();
+                        SetWallPaper(bitmap, mWallManager,context);
+                        Looper.loop();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }).start();
 
 
-        System.out.println("setWallPaperAndBackground");
-        Bitmap bitmap = null;
-        File file = new File(picturePath);
+                new Thread(() -> {
+                    try {
+                        Looper.prepare();
+                        SetLockWallPaper(bitmap, mWallManager,context);
+                        Looper.loop();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }).start();
+                break;
+            }
+            case GlobalSetting.lockScreen: { // 只有锁屏
+                new Thread(() -> {
+                    try {
+                        Looper.prepare();
+                        SetLockWallPaper(bitmap, mWallManager,context);
+                        Looper.loop();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }).start();
+                break;
+            }
+            case GlobalSetting.mainScreen: // 只有主屏幕
 
-        if (file.exists()) {
-            bitmap = BitmapFactory.decodeFile(picturePath);
+                new Thread(() -> {
+                    try {
+                        Looper.prepare();
+                        SetWallPaper(bitmap, mWallManager,context);
+                        Looper.loop();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }).start();
+                break;
         }
-//                返回了图片路径之后，在这里设置
-        Bitmap finalBitmap = bitmap;
-        new Thread(() -> {
-            try {
-                SetWallPaper(finalBitmap, context);
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println("草草草草草草草草草草擦擦擦擦擦擦擦擦擦");
-            }
-        }).start();
-
-        Bitmap finalBitmap1 = bitmap;
-        new Thread(() -> {
-            try {
-                SetLockWallPaper(context, finalBitmap1);
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println("草草草草草草草草草草擦擦擦擦擦擦擦擦擦");
-            }
-        }).start();
-
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
-    public static void SetWallPaper(Bitmap bitmap, Context context) {
-
+    public static void SetWallPaper(Bitmap bitmap, WallpaperManager mWallManager, Context context) {
         try {
-            WallpaperManager mWallManager = WallpaperManager.getInstance(context);
             mWallManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_SYSTEM);
-            System.out.println("壁纸成功");
+            makeToast("设置主屏幕壁纸成功", context);
+            bitmap.recycle();
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println("壁纸失败");
+            System.out.println("SetWallPaper壁纸失败");
         }
 
     }
@@ -182,14 +187,11 @@ public class FileUtil {
      * @return java.lang.String
      * @date 16:54 2021-06-30
      * @description 通过文件的uri，返回可以读取的内部存储路径，因为如果自己扫描
-     * 文件的话，返回的路径不能直接读取，需要转换
+     * 文件，返回的路径不能直接读取，需要转换
      */
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public static String getPath(final Context context, final Uri uri) {
-
-
         final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
-
         // DocumentProvider
         if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
             // ExternalStorageProvider
@@ -197,20 +199,15 @@ public class FileUtil {
                 final String docId = DocumentsContract.getDocumentId(uri);
                 final String[] split = docId.split(":");
                 final String type = split[0];
-
                 if ("primary".equalsIgnoreCase(type)) {
                     return Environment.getExternalStorageDirectory() + "/" + split[1];
                 }
-
-                // TODO handle non-primary volumes
             }
             // DownloadsProvider
             else if (isDownloadsDocument(uri)) {
-
                 final String id = DocumentsContract.getDocumentId(uri);
                 final Uri contentUri = ContentUris.withAppendedId(
                         Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
-
                 return getDataColumn(context, contentUri, null, null);
             }
             // MediaProvider
@@ -218,7 +215,6 @@ public class FileUtil {
                 final String docId = DocumentsContract.getDocumentId(uri);
                 final String[] split = docId.split(":");
                 final String type = split[0];
-
                 Uri contentUri = null;
                 if ("image".equals(type)) {
                     contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
@@ -232,13 +228,11 @@ public class FileUtil {
                 final String[] selectionArgs = new String[]{
                         split[1]
                 };
-
                 return getDataColumn(context, contentUri, selection, selectionArgs);
             }
         }
         // MediaStore (and general)
         else if ("content".equalsIgnoreCase(uri.getScheme())) {
-
             // Return the remote address
             if (isGooglePhotosUri(uri))
                 return uri.getLastPathSegment();
@@ -249,7 +243,6 @@ public class FileUtil {
         else if ("file".equalsIgnoreCase(uri.getScheme())) {
             return uri.getPath();
         }
-
         return null;
     }
 
@@ -272,7 +265,6 @@ public class FileUtil {
         final String[] projection = {
                 column
         };
-
         try {
             cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs,
                     null);
@@ -330,8 +322,6 @@ public class FileUtil {
      * 下文件名字的后续就行 ：ICO (Windows ICON image format), BMP, JPEG, WBMP, GIF, and PNG.
      */
     public static boolean isImgFile(String fname) {
-
-
         try {
             BitmapFactory.Options options = new BitmapFactory.Options();
             /**
@@ -343,25 +333,48 @@ public class FileUtil {
             /**
              *options.outHeight为原始图片的高
              */
-            if(options.outHeight> 0){
-                System.out.println(fname + "   是文件");
-                Log.e("Test", "Bitmap Height == " + options.outHeight);
+            if (options.outHeight > 0) {
                 return true;
-            }else{
-                System.out.println(fname + "   不是文件");
-                Log.e("Test", "Bitmap Height == " + options.outHeight);
+            } else {
                 return false;
             }
-
-        }catch (Exception e){
-            System.out.println(fname + "不是文件");
+        } catch (Exception e) {
             return false;
         }
-
-
     }
 
+    //    toast
+    public static void makeToast(String str, Context context) {
+        Toast.makeText(context, str, Toast.LENGTH_SHORT).show();
+    }
 
+    public static void getFilePermission(Context context) {
+        XXPermissions.with(context)
+                // 不适配 Android 11 可以这样写
+                //.permission(Permission.Group.STORAGE)
+                // 适配 Android 11 需要这样写，这里无需再写 Permission.Group.STORAGE
+//                .permission(Permission.READ_EXTERNAL_STORAGE)
+                .permission(Permission.MANAGE_EXTERNAL_STORAGE)
+                .request(new OnPermissionCallback() {
+                    @Override
+                    public void onGranted(List<String> permissions, boolean all) {
+                        if (all) {
+                            makeToast("获取存储权限成功", context);
+                        }
+                    }
+
+                    @Override
+                    public void onDenied(List<String> permissions, boolean never) {
+                        if (never) {
+                            makeToast("被永久拒绝授权，请手动授予存储权限", context);
+                            // 如果是被永久拒绝就跳转到应用权限系统设置页面
+                            XXPermissions.startPermissionActivity(context, permissions);
+                        } else {
+                            makeToast("获取存储权限失败", context);
+                        }
+                    }
+                });
+    }
 }
 
 

@@ -1,49 +1,34 @@
 package com.example.final_wallpaper.ui.middle;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ImageView;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
-import com.bumptech.glide.load.Options;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
-import com.example.final_wallpaper.MainActivity;
 import com.example.final_wallpaper.R;
-//import com.example.final_wallpaper.util.OnRecyclerItemClickListener;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-
 import io.supercharge.shimmerlayout.ShimmerLayout;
 
+/*
+ * @author zjy
+ * @param null
+ * @return
+ * @date 16:26 2021-07-04
+ * @description 为相册写的ListAdapter
+ */
+
 public class RecycleAdapta extends ListAdapter<String, MyViewHolder> {
-    private Set<String> items;
-
-//    private Context mContext;
-
+    private ArrayList<String> items;
     private OnItemClickListener mOnItemClickListener;
 
     /*
@@ -58,35 +43,18 @@ public class RecycleAdapta extends ListAdapter<String, MyViewHolder> {
      * @param clickListener
      * @return void
      * @date 17:19 2021-06-30
-     * @description 设置监听事件
+     * @description 设置监听事件，这个监听事件是从外边传过来的
      */
     public void setOnItemClickListener(OnItemClickListener clickListener) {
-        
         this.mOnItemClickListener = clickListener;
     }
 
 
-    public void convertList(){
-        /*
-         * @author zjy
-         * @param
-         * @return void
-         * @date 17:19 2021-06-30
-         * @description 
-         */
-        synchronized (list){
-            list = new ArrayList(items);
-        }
-    }
-
-
-
-
-    public void setItems(Set<String> items) {
+    public void setItems(ArrayList<String> items) {
         this.items = items;
     }
 
-    public RecycleAdapta(Set<String> items) {
+    public RecycleAdapta(ArrayList<String> items) {
 
         super(new DiffUtil.ItemCallback<String>() {
             @Override
@@ -101,12 +69,10 @@ public class RecycleAdapta extends ListAdapter<String, MyViewHolder> {
 
 //        初始化两个数据
         if(items == null){
-            this.items = new HashSet<>();
+            this.items = new ArrayList<>();
         }else{
             this.items = items;
         }
-        this.list = new ArrayList<>(items);
-
     }
 
     @Override
@@ -118,12 +84,9 @@ public class RecycleAdapta extends ListAdapter<String, MyViewHolder> {
     @Override
     public   MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         MyViewHolder holder = new
-                MyViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.img_cell, parent, false), mOnItemClickListener, list);
+                MyViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.img_cell, parent, false), mOnItemClickListener, items);
         return holder;
     }
-
-
-    ArrayList<String> list ;
 
 
 
@@ -133,13 +96,12 @@ public class RecycleAdapta extends ListAdapter<String, MyViewHolder> {
         holder.shimmerLayout.setShimmerColor(0x55ffffff);
         holder.shimmerLayout.setShimmerAngle(0);
         holder.shimmerLayout.startShimmerAnimation();
-
+        holder.imgList = items;
 //        加载图片
         Glide.with(holder.itemView)
-                .load(list.get(position))
+                .load(items.get(position))
                 .placeholder(R.drawable.source_focus)
                 .centerCrop()
-
                 .override(480,640)
                 .listener(new RequestListener<Drawable>() {
                     @Override
@@ -154,9 +116,6 @@ public class RecycleAdapta extends ListAdapter<String, MyViewHolder> {
                         }
                         return false;
                     }
-
-
-
                 })
                 .into(holder.imageView);
     }
@@ -166,15 +125,13 @@ public class RecycleAdapta extends ListAdapter<String, MyViewHolder> {
 class MyViewHolder extends RecyclerView.ViewHolder {
     ImageView imageView;
     ShimmerLayout shimmerLayout;
-
+    ArrayList<String> imgList;
 //    //声明自定义的监听接口
-//    private RecycleAdapta.OnItemClickListener monItemClickListener;
-
-    public MyViewHolder(@NonNull View itemView,final RecycleAdapta.OnItemClickListener onClickListener, ArrayList<String> imgList) {
+    public MyViewHolder(@NonNull View itemView,final RecycleAdapta.OnItemClickListener onClickListener, ArrayList<String> imList) {
         super(itemView);
         imageView = itemView.findViewById(R.id.img_cell);
         shimmerLayout = itemView.findViewById(R.id.shimmer_simgle);
-
+        this.imgList = imList;
 //        每个子类有自己的点击事件
         itemView.setOnClickListener(view -> {
             if (onClickListener != null) {
@@ -186,5 +143,9 @@ class MyViewHolder extends RecyclerView.ViewHolder {
             }
         });
 
+    }
+
+    public void setImgList(ArrayList<String> imgList) {
+        this.imgList = imgList;
     }
 }

@@ -20,6 +20,6 @@
     <fragment
         android:id="@+id/navigation_notifications"
         android:name="com.example.final_wallpaper.ui.middle.MiddleFragment"
-        android:label="@string/title_notifications"
+        android:label="@string/title_setting"
         tools:layout="@layout/fragment_middle" />
 </navigation>

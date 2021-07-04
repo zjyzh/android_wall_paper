@@ -1,5 +1,6 @@
 package com.example.final_wallpaper;
 
-public interface ToFragmentListener {
-    void onTypeClick(String message);
-}
+//// fragment和activity通信要用的
+//public interface ToFragmentListener {
+//    void onTypeClick(String message);
+//}

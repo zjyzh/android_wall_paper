@@ -1,24 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+        android:id="@+id/pager_2_layout"
     android:layout_height="match_parent"
     tools:context=".grid_img.PagerFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/viewPager2"
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginBottom="50dp" />
+        <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/viewPager2"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/txt_photo_tag"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginBottom="50dp"
-        android:gravity="bottom|center_horizontal"
-        android:text="@string/hello_blank_fragment" />
+
+
+        </androidx.viewpager2.widget.ViewPager2>
+
+
+        <TextView
+                android:id="@+id/txt_photo_tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.9"
+                android:text="@string/hello_blank_fragment"
+                android:textSize="18sp" />
+
+
+        <ImageView
+                android:id="@+id/imageViewReturn"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+
+                app:srcCompat="@drawable/return_pic"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                android:contentDescription="@string/downloadimage"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginTop="36dp"
+                android:layout_marginLeft="24dp"
+                android:layout_marginStart="24dp" />
+
+
+        <ImageView
+                android:id="@+id/imageViewDownload"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:clickable="true"
+                android:focusable="true"
+                app:srcCompat="@drawable/btn_download"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/viewPager2"
+                android:contentDescription="@string/downloadimage"
+                app:layout_constraintVertical_bias="0.9"
+                android:layout_marginRight="32dp"
+                android:layout_marginEnd="32dp" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
 
 </FrameLayout>

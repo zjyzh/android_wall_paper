@@ -6,7 +6,7 @@
     app:startDestination="@id/pagerFragment">
     <fragment
         android:id="@+id/muti_img"
-        android:name="com.example.final_wallpaper.grid_img.Muti_img"
+        android:name="com.example.final_wallpaper.grid_img.MutiImageFragment"
         android:label="fragment_muti_img"
         tools:layout="@layout/fragment_muti_img" >
         <action

@@ -18,7 +18,7 @@
     <item
         android:id="@+id/navigation_notifications"
         android:icon="@drawable/setting_menu"
-        android:title="@string/title_notifications"
+        android:title="@string/title_setting"
         android:enabled="true"/>
 
 </menu>

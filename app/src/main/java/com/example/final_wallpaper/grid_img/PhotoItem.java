@@ -5,11 +5,16 @@ import android.os.Parcelable;
 
 import com.google.gson.annotations.SerializedName;
 
-import java.util.List;
 
-
-
+/*
+ * @author zjy
+ * @param null
+ * @return
+ * @date 16:41 2021-07-04
+ * @description 这个相当于javaBean，用来接受网络传来的json对象
+ */
 public class PhotoItem implements Parcelable {
+
     @SerializedName("id")
     int photoId;
     @SerializedName("webformatURL")
