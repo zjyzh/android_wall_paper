@@ -9,7 +9,7 @@
 
         <variable
             name="data"
-            type="com.example.final_wallpaper.MainViewModel" />
+            type="com.example.little_wallpaper.MainViewModel" />
 
         <variable
             name="imageUrl"

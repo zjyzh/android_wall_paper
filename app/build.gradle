@@ -7,7 +7,7 @@ android {
     buildToolsVersion "30.0.3"
 
     defaultConfig {
-        applicationId "com.example.final_wallpaper"
+        applicationId "zjy.little_wallpaper"
         minSdkVersion 16
         targetSdkVersion 30
         versionCode 1
@@ -25,21 +25,67 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        // add the code from below line.
+        applicationVariants.all{
+                // this methid is use to rename your all apk weather
+                // it may be signed or unsigned(debug apk)
+            variant ->
+                variant.outputs.each{
+                        // on below line we are setting a
+                        // name to our apk as GFG.apk
+                    output->
+                        def name = "LittleWallpaper.apk"
+                        // on below line we are setting the
+                        // outputFile Name to our apk file.
+                        output.outputFileName = name
+                }
+        }
     }
+
+//    buildTypes {
+//        release {
+//            minifyEnabled false
+//            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+//        }
+//        // add the code from below line.
+//        applicationVariants.all{
+//                // this methid is use to rename your all apk weather
+//                // it may be signed or unsigned(debug apk)
+//            variant ->
+//                variant.outputs.each{
+//                        // on below line we are setting a
+//                        // name to our apk as GFG.apk
+//                    output->
+//                        def name = "GFG.apk"
+//                        // on below line we are setting the
+//                        // outputFile Name to our apk file.
+//                        output.outputFileName = name
+//                }
+//        }
+//    }
+
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    // 自定义打包名称
+    android.applicationVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = "LittleWallpaper.apk"
+        }
+    }
+
+
 }
 
 dependencies {
 //添加此行
-//    implementation 'com.android.support:multidex:1.0.3'
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    implementation 'androidx.vectordrawable:vectordrawable:1.1.0'
+//    implementation 'androidx.vectordrawable:vectordrawable:1.1.0'
     implementation 'androidx.navigation:navigation-fragment:2.3.5'
     implementation 'androidx.navigation:navigation-ui:2.3.5'
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
@@ -52,15 +98,7 @@ dependencies {
 //    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation 'com.android.volley:volley:1.1.1'
 
-//    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.0.0'
-
     implementation 'com.github.bumptech.glide:glide:4.12.0'
-
-//    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0-rc03'
-//
-//    implementation 'androidx.navigation:navigation-fragment-ktx:2.1.0'
-//
-//    implementation 'androidx.navigation:navigation-ui-ktx:2.1.0'
 
     implementation 'com.google.code.gson:gson:2.8.6'
 
@@ -72,24 +110,4 @@ dependencies {
     implementation 'com.github.getActivity:XXPermissions:11.5'
 
 
-//    计划任务
-//    def work_version = "2.5.0"
-//
-//    // (Java only)
-//    implementation "androidx.work:work-runtime:$work_version"
-//
-//    // Kotlin + coroutines
-//    implementation "androidx.work:work-runtime-ktx:$work_version"
-//
-//    // optional - RxJava2 support
-//    implementation "androidx.work:work-rxjava2:$work_version"
-//
-//    // optional - GCMNetworkManager support
-//    implementation "androidx.work:work-gcm:$work_version"
-//
-//    // optional - Test helpers
-//    androidTestImplementation "androidx.work:work-testing:$work_version"
-//
-//    // optional - Multiprocess support
-//    implementation "androidx.work:work-multiprocess:$work_version"
 }

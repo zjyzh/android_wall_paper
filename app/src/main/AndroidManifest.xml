@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
-        package="com.example.final_wallpaper"
+        package="com.example.little_wallpaper"
     android:requestLegacyExternalStorage="true"
     >
 
@@ -14,16 +14,16 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <application
         android:allowBackup="true"
-        android:icon="@drawable/little"
+        android:icon="@drawable/title"
         android:largeHeap="true"
-        android:roundIcon="@drawable/little"
+        android:roundIcon="@drawable/title"
         android:supportsRtl="true"
         android:requestLegacyExternalStorage="true"
             android:usesCleartextTraffic="true"
         android:theme="@style/Theme.Design.NoActionBar"
             tools:targetApi="m">
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.little_wallpaper.MainActivity"
             android:label="@string/app_name"
                 android:launchMode="singleInstance"
 
@@ -41,7 +41,7 @@
 <!--                android:label="@string/online" android:launchMode="singleInstance">-->
 
         <service
-                android:name=".util.WallPaperService"
+                android:name="com.example.little_wallpaper.util.WallPaperService"
                 android:enabled="true"
                 android:permission="android.permission.BIND_WALLPAPER">
         </service>

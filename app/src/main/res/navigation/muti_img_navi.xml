@@ -6,7 +6,7 @@
     app:startDestination="@id/pagerFragment">
     <fragment
         android:id="@+id/muti_img"
-        android:name="com.example.final_wallpaper.grid_img.MutiImageFragment"
+        android:name="com.example.little_wallpaper.grid_img.MutiImageFragment"
         android:label="fragment_muti_img"
         tools:layout="@layout/fragment_muti_img" >
         <action
@@ -15,7 +15,7 @@
     </fragment>
     <fragment
         android:id="@+id/pagerFragment"
-        android:name="com.example.final_wallpaper.grid_img.PagerFragment"
+        android:name="com.example.little_wallpaper.grid_img.PagerFragment"
         android:label="fragment_pager"
         tools:layout="@layout/fragment_pager" />
 </navigation>

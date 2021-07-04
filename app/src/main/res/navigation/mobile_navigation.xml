@@ -7,19 +7,19 @@
 
     <fragment
         android:id="@+id/navigation_home"
-        android:name="com.example.final_wallpaper.ui.home.HomeFragment"
+        android:name="com.example.little_wallpaper.ui.home.HomeFragment"
         android:label="@string/title_home"
         tools:layout="@layout/fragment_home" />
 
     <fragment
         android:id="@+id/navigation_dashboard"
-        android:name="com.example.final_wallpaper.ui.setting.SettingFragment"
+        android:name="com.example.little_wallpaper.ui.setting.SettingFragment"
         android:label="@string/title_dashboard"
         tools:layout="@layout/fragment_setting" />
 
     <fragment
         android:id="@+id/navigation_notifications"
-        android:name="com.example.final_wallpaper.ui.middle.MiddleFragment"
+        android:name="com.example.little_wallpaper.ui.middle.MiddleFragment"
         android:label="@string/title_setting"
         tools:layout="@layout/fragment_middle" />
 </navigation>
